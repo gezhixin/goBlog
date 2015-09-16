@@ -1,0 +1,99 @@
+<fieldset>
+	<legend>发布文章</legend>
+	<form method="post" name="p" action="/admin/article/save">
+	<table class="table table-form">
+		<tbody>
+			<tr>
+				<th width="60">标题</th>
+				<td>
+					<input type="text" name="title" class="span6" />
+				</td>
+			</tr>
+			<tr>
+				<th>发生日期</th>
+				<td>
+					<select style="width:50px;height:20px;" name="happenMonth" id="id_happen_month_selec">
+					</select>
+					<span style="font-size:20px;">月</span>
+					<select style="width:50px;height:20px;" name="happenDay" id="id_happen_day_selec">
+					</select>
+					<span style="font-size:20px;">日</span>
+            	</td>
+			</tr>
+			<tr>
+				<th>分类标签</th>
+				<td>
+					<select name="tag" class="span3" />
+						{{range $k, $v := .list}}
+							<option value="{{$v.Name}}">{{$v.Name}}</option>
+						{{end}}
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th>保存到</th>
+				<td>
+					<select name="status">
+						<option value="0">已发布</option>
+						<option value="1">草稿箱</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th>内容</th>
+				<td>
+					<script type="text/javascript" charset="utf-8">
+						window.UEDITOR_HOME_URL = "/static/ueditor/";
+					</script>
+					<script type="text/javascript" src="/static/ueditor/ueditor.config.js"></script>
+					<script type="text/javascript" src="/static/ueditor/ueditor.all.min.js"></script>
+					<script type="text/plain" id="content" name="content"></script>
+					<script type="text/javascript" charset="utf-8">
+						var options = {"fileUrl":"http://127.0.0.1:8080/admin/article/upload","filePath":"","imageUrl":"/admin/article/upload","imagePath":"","initialFrameWidth":"90%","initialFrameHeight":"400"};
+						var ue = UE.getEditor("content", options);
+					</script>
+				</td>
+			</tr>
+		</tbody>
+		<tfoot>
+		<tr>
+			<td></td>
+			<td><button type="submit" class="btn"><i class="icon-ok"></i> 提交</button>
+				<button type="button" class="btn" onclick="javascript:history.back();">取消</button></td>
+		</tr>
+		</tfoot>
+	</table>
+	</form>
+
+</fieldset>
+<script type="text/javascript">
+	$(function() {
+
+		for(var j = 1; j <= 12; j++) {
+			$("#id_happen_month_selec").append($("<option>").val(j).text(j));
+			writeDaySelec(1);
+			$("#id_happen_month_selec").val("{{.month}}");
+			$("#id_happen_day_selec").val("{{.day}}");
+		}
+
+		$('#id_happen_month_selec').change(function(){ 
+			var m=$(this).children('option:selected').val();//这就是selected的值 
+			console.log("m --->" + m);
+			writeDaySelec(m);
+		});
+
+		function writeDaySelec (m) {
+			var count = 31;
+			if (m == 2) {
+				count = 29;
+			} else if (m == 4 || m == 6 || m == 9 || m == 11){
+				count = 30;
+			}
+			$("#id_happen_day_selec").empty();
+			for (var i = 1; i <= count; i++) {
+				
+				$('#id_happen_day_selec').append($("<option>").val(i).text(i)); 
+			}
+		}
+	});
+</script>

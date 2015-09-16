@@ -1,0 +1,69 @@
+<fieldset>
+	<legend>标签管理 ｜
+		<a href="#" id="new_tag" onclick="add_tag()" style="font-size:14px;"> 新增</a>
+	</legend>
+	<form method="post" id="add_tag" style="display:none;margin-left:5px;" action="/admin/tag/add">
+		<input type="text" name="newTagName">
+		<button class="btn btn-small" type="submit" style="margin-left:10px">新增标签</button>
+	</form>
+	<form method="post" name="p" action="/admin/tag?act=batch">
+	<table class="table table-hover table-list">
+		<thead>
+		<tr>
+			<th width="30"><input type="checkbox" name="all" value="0" onclick="checkall('ids[]', this)" /></th>
+			<th width="60">ID</th>
+			<th width="200">标签名称</th>
+			<th width="150">内容数</th>
+			<th width="50">操作</th>
+		</tr>
+		</thead>
+		<tbody>
+		{{range $k, $v := .list}}
+			<tr>
+				<td><input type="checkbox" name="ids[]" value="{{$v.Id}}" {{if eq $v.Name "未分组"}}disabled="disabled"{{end}}/></td>
+				<td>{{$v.Id}}</td>
+				<td><a href="/admin/article/list?t=tag&tag={{$v.Name}}">{{$v.Name}}</a></td>
+				<td>{{$v.Count}}</td>
+				<td><a href="/admin/tag/delete?id={{$v.Id}}" onclick="return del_confirm()" {{if eq $v.Name "未分组"}}style="visibility:hidden"{{end}}>删除</a></td>
+			</tr>
+		{{end}}
+		</tbody>
+		<tfoot>
+			<tr>
+				<td colspan="20">{{str2html .pagebar}}</td>
+			</tr>
+			<tr>
+				<td width="30"><input type="checkbox" name="all" value="0" onclick="checkall('ids[]', this)" /></td>
+				<td colspan="20">
+					<select name="op" id="op">
+						<option value="">批量操作</option>
+						<option value="merge" >合并到</option>
+						<option value="delete" >删除</option>
+					</select>
+					<span id="mergeto" style="display:none;margin-left:10px;">
+					<input type="text" name="" class="span1" style="margin:0" placeholder="新标签" />
+					</span>
+					<button type="submit" class="btn btn-small" style="margin-left:20px;">应用</button>
+				</td>
+			</tr>
+		</tfoot>
+	</table>
+	</form>
+
+</fieldset>
+
+<script type="text/javascript">
+$(function() {
+	$("#op").change(function() {
+		if ($(this).children("option:selected").val() == 'merge') {
+			$('#mergeto').show();
+		} else {
+			$('#mergeto').hide();
+		}
+	});
+});
+
+function add_tag () {
+		$("#add_tag").show();
+	}
+</script>

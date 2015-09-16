@@ -1,0 +1,56 @@
+<fieldset>
+	<legend>回收站</legend>
+	<div>
+		<form method="post" name="p" action="/admin/article/batch">
+			<table class="table table-list">
+				<thead>
+					<tr>
+						<th width="30"><input type="checkbox" name="all" value="0" onclick="checkall('ids[]', this)" /></th>
+						<th width="50">ID</th>
+						<th>标题</th>
+						<th width="80">标签</th>
+						<th width="60">点击量</th>
+						<th width="60">发布人</th>
+						<th width="120">更新时间</th>
+						<th width="80">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+				{{range $k, $v := .list}}
+				<tr>
+					<td><input type="checkbox" name="ids[]" value="{{$v.Id}}" /></td>
+					<td>{{$v.Id}}</td>
+					<td class="hl_title">
+						<a href="{{$v.Title}}" target="_blank">{{str2html $v.Title}}</a>
+						{{if eq $v.Status 1}}
+						<span class="label label-important">草稿</span>
+						{{end}}
+						{{if eq $v.Status 2}}
+						<span class="label" style="background-color:#4F4F4F;">删除了的</span>
+						{{end}}
+					</td>
+					<td>{{$v.Tag}}</td>
+					<td>{{$v.ReadCount}}</td>
+					<td class="hl_author">{{$v.AuthorName}}</td>
+					<td>{{date $v.UpdateTime "m月d日 H:i:s"}}</td>
+					<td><a href="/admin/article/edit?id={{$v.Id}}">编辑</a> | <a href="/admin/article/destroy?id={{$v.Id}}" onclick="return del_confirm()">删除</a></td>
+				</tr>
+				{{end}}
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="20">
+							<select name="op" id="op">
+							<option value="">批量操作</option>
+							<option value="topub" >移至已发布</option>
+							<option value="todrafts" >移至草稿箱</option>
+							<option value="todestroy" >永远删除</option>
+							</select>
+							<button type="submit" class="btn btn-small">应用</button>
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+		</form>
+ 	</div>
+</fieldset>

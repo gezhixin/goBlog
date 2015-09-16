@@ -1,0 +1,156 @@
+<fieldset>
+	<legend>文章列表 {{if eq .listType "date"}}｜ <a href="/admin/article/add?d={{.happenDay}}&m={{.happenMonth}}" style="font-size:14px;"> 新增</a>{{end}}</legend>
+	<div style="margin-bottom:10px;">
+	{{if eq .listType "date"}}
+		<select id="id_happen_month_selec" name="happenMonth" style="width:50px;height:20px;">
+		</select>
+		<span style="font-size:20px;">月</span>
+		<select id="id_happen_day_selec" name="happenDay" style="width:50px;height:20px;">
+		</select>
+		<span style="font-size:20px;">日</span>
+		<br/>
+	{{end}}
+	{{if eq .listType "tag"}}
+		<select id="id_tag_selec" style="width:150px;height:20px;">
+		{{$tagName := .tag}}
+		{{range $k, $v := .tagList}}
+			<option value="{{$v.Name}}" {{if eq $v.Name $tagName}}selected="selected"{{end}}>{{$v.Name}}</option>
+		{{end}}
+		</select>
+	{{end}}
+	</div>
+	<div>
+	    {{if eq .listType "date"}}
+		<span id="id_date" style="font-size:32px;">{{.happenMonth}}月{{.happenDay}}日</span>
+		{{end}}
+		{{if eq .listType "tag"}}
+		<span id="id_date" style="font-size:32px;">{{.tag}}</span>
+		{{end}}
+		<form method="post" name="p" action="/admin/article/batch">
+			<table class="table table-list">
+				<thead>
+					<tr>
+						<th width="30"><input type="checkbox" name="all" value="0" onclick="checkall('ids[]', this)" /></th>
+						<th width="50">ID</th>
+						<th>标题</th>
+						<th width="80">标签</th>
+						<th width="60">点击量</th>
+						<th width="60">发布人</th>
+						<th width="120">更新时间</th>
+						<th width="80">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+				{{range $k, $v := .list}}
+				<tr>
+					<td><input type="checkbox" name="ids[]" value="{{$v.Id}}" /></td>
+					<td>{{$v.Id}}</td>
+					<td class="hl_title">
+						<a href="{{$v.Title}}" target="_blank">{{str2html $v.Title}}</a>
+						{{if eq $v.Status 1}}
+						<span class="label label-important">草稿</span>
+						{{end}}
+						{{if eq $v.Status 2}}
+						<span class="label" style="background-color:#4F4F4F;">删除了的</span>
+						{{end}}
+					</td>
+					<td>{{$v.Tag}}</td>
+					<td>{{$v.ReadCount}}</td>
+					<td class="hl_author">{{$v.AuthorName}}</td>
+					<td>{{date $v.UpdateTime "m月d日 H:i:s"}}</td>
+					<td><a href="/admin/article/edit?id={{$v.Id}}">编辑</a> | <a href="/admin/article/delete?id={{$v.Id}}" onclick="return del_confirm()">删除</a></td>
+				</tr>
+				{{end}}
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="20">
+							<select name="op" id="op">
+							<option value="">批量操作</option>
+							<option value="topub" >移至已发布</option>
+							<option value="todrafts" >移至草稿箱</option>
+							<option value="totrash" >移至回收站</option>
+							</select>
+							<button type="submit" class="btn btn-small">应用</button>
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+		</form>
+ 	</div>
+</fieldset>
+
+<script type="text/javascript">
+$(function() {
+	searchtype = $(":input[name='searchtype']").children("option:selected").val();
+	keyword = $(":input[name='keyword']").val();
+	if (keyword != "") {
+		re = new RegExp(keyword, "g");
+		switch (searchtype) {
+			case "title":
+				$(".hl_title").each(function(){
+					$(this).children("a").html($(this).children("a").html().replace(re, "<span style='color:red'>"+keyword+"</span>"));
+				});
+				break;
+			case "author":
+				$(".hl_author").each(function(){
+					$(this).html($(this).html().replace(re, "<span style='color:red'>"+keyword+"</span>"));
+				});
+				break;
+			case "tag":
+				$(".hl_tag").each(function(){
+					$(this).children("a").html($(this).children("a").html().replace(re, "<span style='color:red'>"+keyword+"</span>"));
+				});
+				break;
+		}
+		
+	}
+
+	//日期操作
+	{{if eq .listType "date"}}
+	for(var j = 1; j <= 12; j++) {
+			$("#id_happen_month_selec").append($("<option>").val(j).text(j));
+			writeDaySelec(1);
+			var postMonth = "{{.happenMonth}}";
+			var postDay = "{{.happenDay}}";
+
+			$("#id_happen_month_selec").val(postMonth);
+			$("#id_happen_day_selec").val(postDay);
+		}
+
+		$('#id_happen_month_selec').change(function(){ 
+			var m=$(this).children('option:selected').val();//这就是selected的值 
+			console.log("m --->" + m);
+			writeDaySelec(m);
+		});
+
+		$("#id_happen_day_selec").change(function() {
+			var month = $("#id_happen_month_selec").val();
+			var day = $("#id_happen_day_selec").val();
+			window.location.href="/admin/article/list?t=date&m=" + month + "&d=" + day;
+		});
+
+		function writeDaySelec (m) {
+			var count = 31;
+			if (m == 2) {
+				count = 29;
+			} else if (m == 4 || m == 6 || m == 9 || m == 11){
+				count = 30;
+			}
+			$("#id_happen_day_selec").empty();
+			for (var i = 1; i <= count; i++) {
+				$('#id_happen_day_selec').append($("<option>").val(i).text(i)); 
+			}
+		}
+	{{end}}
+
+	//Tag 操作
+	{{if eq .listType "tag"}}
+	$("#id_tag_selec").change(function () {
+		var tag = $("#id_tag_selec").val();
+		console.log(tag)
+		window.location.href="/admin/article/list?t=tag&tag=" + tag;
+	});
+	{{end}}
+})
+</script>
